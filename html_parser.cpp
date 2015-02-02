@@ -181,7 +181,7 @@ std::vector<char> HTMLParser::next()
 				//just use the HTMLParser's nextTag method. 
 				//but first we have to set the currentIndex because that function starts from there 
 				setCurrentIndex(i);
-				std::cout << std::endl;
+				//std::cout << std::endl;
 				return nextTag();
 			}
 		}
@@ -204,6 +204,7 @@ std::vector<char> HTMLParser::next()
 //ex: return NULL if passed "this is not even close to being a tag"
 std::vector<char> HTMLParser::tagname(const char * s) const
 {
+//	std::cout << "determining tagname for tag : " << s << std::endl;
 	//len of the passed string
 	int len = strlen(s);
 	//std::vector<char> buf;
@@ -211,8 +212,17 @@ std::vector<char> HTMLParser::tagname(const char * s) const
 	int i = 0;
 	for(i; i < len; i++)
 	{
+		//std::cout << "i : " << i << std::endl;
 		if(s[i] == '<') break;
 	}
+	i++;
+
+//	std::cout << "i: " << i << " and len: " << len << std::endl;
+	if(i > len)
+	{
+		return std::vector<char> (0);
+	}
+
 	//i will now be pointing to the first '<' (only '<')
 	//if i == len-1 then there is no '<', which means it is not a tag
 	/*
@@ -224,26 +234,32 @@ std::vector<char> HTMLParser::tagname(const char * s) const
 	*/
 	//if we are here then it is probably a valid tag
 	//i is the start of the string, so we can init a buffer 
-	//of len - i, or len - all the characters at the start
-	std::vector<char> buf (len - i);
-	int j = 0; //index into buf
+	//of len - i, or len - all the characters at the start\
+
+	//int j = 0; //index into buf
 	
 	//open tags can have ids and classes and attributes, but the first string after the < will be the tagname
 	//start by scanning until the first character
+	
 	while(s[i] == ' ') i++;
 	//make sure we are not at a '/'
 	while(s[i] == '/') i++;
+	std::vector<char> buf (len - i);
 	//we are now pointing at the first character. From here we can can until either ' ' or '>' which will indicate the end of the tag name
 	char c = s[i];
-	while(c != ' ' && c != '>')
+	while((i < len) && c != ' ' && c != '>')
 	{
+	//	std::cout << "\t~ " << c << std::endl;
 		buf.push_back(c);
-		j++;
+		i++;
+		c = s[i];
+		//j++;
 	}
 
 	//const char * ret = buf;
 	return buf;
 }
+
 std::vector<char> HTMLParser::tagname(const std::string s) const
 {
 	return tagname(s.c_str());
@@ -255,13 +271,19 @@ std::vector<char> HTMLParser::tagname(const std::string s) const
 //return 1 if a > b
 int HTMLParser::cmpTags(const char * a, const char * b) const
 {
+//	std::cout << "cmpTags, a: " << a << ", b: " << b << std::endl;
 	std::vector<char> aN = tagname(a);
 	std::vector<char> bN = tagname(b);
 
 	std::string aS (aN.begin(), aN.end());
 	std::string bS (bN.begin(), bN.end());
 
-	return aS.compare(bS);
+//	std::cout << "aS name : " << aS << " and bN name : " << bS << std::endl;
+
+	
+	int r = aS.compare(bS);
+	//std::cout << "cmpTags, a: " << aS << "(" << aS.length() << "), b: " << bS << "(" << bS.length() << "). return : " << r << std::endl;
+	return r;
 }
 int HTMLParser::cmpTags(const std::string a, const std::string b) const
 {
@@ -277,13 +299,16 @@ bool HTMLParser::isCloseTag(const char * s) const
 
 	for(int i = 0; i < len; i++)
 	{
+//		std::cout << s[i] << std::endl;
 		if(s[i] == '/')
 		{
+//			std::cout << "1" << std::endl;
 			closeTag = true;
 			break;
 		}
-		else if (s[i] != '<' || s[i] != ' ')
+		else if (s[i] != '<' && s[i] != ' ')
 		{
+//			std::cout << "2" << std::endl;
 			//if the char is not an open tag, a space, or a '/' then it cannot be a close tag
 			closeTag = false;
 			break;

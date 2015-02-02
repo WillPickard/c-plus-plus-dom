@@ -23,8 +23,9 @@ int main(int argc, const char * argv[])
 	lines.assign( (istreambuf_iterator<char> (file) ),
 					(istreambuf_iterator<char> ()) );
 
-	cout << lines << endl;
-	//DOM * dom = new DOM(lines);
+	//cout << lines << endl;
+	DOM * dom = new DOM(lines);
 
+	cout << "done" << endl;
 	return 0;
 }

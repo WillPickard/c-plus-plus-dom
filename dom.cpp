@@ -58,166 +58,23 @@ DOM::DOM(const char * html)
 {
 	setRawHTML(html);
 
-	//vector of raw tags
-	std::vector<const char *> raw_tags;
-	std::stack<char> chars;
-	std::stack<const char *> partial_tags;
-	std::queue<const char *> tags;
-	bool isCloseTag = false; //set to true when it is a closing tag (has '/')
-	//number of characters in the html
-	int len = strlen(html);
-	//iterate through all of the characters, pushing them onto the character stack
-	std::string openTag = "";
-	std::string closeTag = "";
-	std::string innerText = "";
-	std::string fullTag = "";
-	std::size_t str_length;
-	char *cT, *fT, *oT, *iT;
-	for(int i = 0; i < len; i++)
+	HTMLParser * parser = new HTMLParser(html);
+
+	std::queue<std::string> tags;
+	std::vector<char> current;
+	std::string s;
+	std::cout << "constructing dom" << std::endl;
+	while(parser->hasMore())
 	{
-		char c = html[i];
-		chars.push(c);
-
-		switch(c)
-		{
-			case '<':
-				if(html[i + 1] == '/')
-				{
-					//close tag
-					chars.push(html[i + 1]);
-					i += 2;
-					c = html[i];
-
-					//close tag encountered
-					while(c != '>')
-					{
-						c = html[i++];
-						chars.push(c);
-					}
-					//c is '>'
-					// /chars.push(c);
-					closeTag = "";
-					while(c != '<')
-					{
-						c = chars.top();
-						chars.pop();
-						closeTag = c + closeTag;
-					}
-				//	std::cout << closeTag << std::endl;
-
-					cT = (char *) malloc(closeTag.length() + 1);
-					str_length = closeTag.copy(cT, closeTag.length(), 0);
-					cT[str_length] = '\0';
-				//	tags.push(cT);
-				//	partial_tags.push(cT);
-				//	std::cout << "closeTag : " << partial_tags.top() << std::endl;
-					//closeTag = "";
-					//now iterate threw the characters if there are any
-					if(!chars.empty())
-					{
-						innerText = "";
-						while(!chars.empty())
-						{
-							c = chars.top();
-							chars.pop();
-							innerText = c + innerText; 
-						}
-
-						//now push the inner text on first. Then the close tag
-						iT = (char *) malloc(innerText.length() + 1);
-						str_length = innerText.copy(iT, innerText.length(), 0);
-						iT[str_length] = '\0';
-						tags.push(iT);
-					}
-					tags.push(cT);
-
-				//	closeTag = partial_tags.top();
-				//	std::cout << "closeTag: " << partial_tags.top() << std::endl;
-				//	partial_tags.pop();
-
-				//	openTag = partial_tags.top();
-				//	partial_tags.pop();
-
-				//	fullTag = openTag + innerText + closeTag;
-				//	fT = (char *) malloc(fullTag.length() + 1);
-				//	str_length = fullTag.copy(fT, fullTag.length(), 0);
-					//fT[str_length] = '\0';
-				//	std::cout << fullTag << std::endl;
-				//	sleep(2);
-					//raw_tags.push_back(fT);
-				}
-				else
-				{
-					//open tag. just push it onto the stack and let the next case handle it
-				//	chars.push(c);
-				}
-				break;
-			case '>':
-				//end of open tag
-				chars.pop();
-				openTag = c;
-				while(!chars.empty())
-				{
-					c = chars.top();
-					chars.pop();
-					openTag = c + openTag;
-				}
-				oT = (char *) malloc(openTag.size() + 1);
-				str_length = openTag.copy(oT, openTag.size(), 0);
-				oT[str_length] = '\0';
-				tags.push(oT);
-			//	partial_tags.push(oT);
-				break;
-			default:
-				//chars.push(c);
-				break;
-		}
+		current = parser->next();
+		s.assign(current.begin(), current.end());
+		tags.push(s);
 	}
 
-	//now make the dom 
-	if(!tags.empty())
+	while(!tags.empty())
 	{
-		std::queue<const char *> tagsToProcess;
-
-		const char * firstTag = tags.front();
-		if(strlen(firstTag) >= 2 && firstTag[1] == '!')
-		{
-			//the document declaration tag
-			//pop it off
-			const char * docType = firstTag;
-			tags.pop();
-			
-		}
-		
-		//now the root will be whatever is on the top
-		tagsToProcess.push(tags.front());
+		std::cout << tags.front() << std::endl;
 		tags.pop();
-		while(!tagsToProcess.empty())
-		{
-			const char * tag = tags.front();
-			tags.pop();
-			//put it on the toProcess
-			tagsToProcess.push(tag);
-			//check to see if it was a closetag
-			if(strlen(tag) >= 2 && tag[1] == '/')
-			{
-				std::string fullTag = tag;
-				//if it is a closing tag, then pop til you get its counter part
-				size_t closeTagLength = strlen(tag);
-				//we subtract 3 because the close tag has 3 chars that do not distinguish its tag type (</p> - only need the p)
-				int actualTagLength = closeTagLength - 3;
-
-				char cleanCloseTag[actualTagLength], openCloseTag[actualTagLength];
-				//substr
-				memcpy(cleanCloseTag, &tag[1], actualTagLength);
-
-				tag = tags.front();
-				if(strlen(tag) > actualTagLength + 2)
-				{
-					//if it is 2 greater than the actual tag length 
-				}
-			}
-		}	
 	}
 }
 
