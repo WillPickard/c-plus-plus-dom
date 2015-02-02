@@ -179,16 +179,16 @@ std::vector<char> HTMLParser::next()
 			{
 				//we have an open tag
 				//just use the HTMLParser's nextTag method. 
-				//but first we have to set the currentIndex because that function starts from there onto it
+				//but first we have to set the currentIndex because that function starts from there 
 				setCurrentIndex(i);
 				std::cout << std::endl;
 				return nextTag();
 			}
 		}
-		if(raw_html[i] != '\t' && raw_html[i] != '\n')
+		if(!isEscapeSequence(raw_html[i]))
 		{
 			ret.push_back(raw_html[i]);
-		//	std::cout << "\tadd: '" << raw_html[i] << "'" << std::endl;
+			//std::cout << "\tadd: '" << raw_html[i] << "' " << strlen(&raw_html[i]) << " to int: " << (int) raw_html[i] << std::endl;
 			//sleep(1);
 		}
 	}
@@ -325,6 +325,32 @@ bool HTMLParser::isTag(const char * s) const
 
 	return isTag;
 
+}
+
+bool HTMLParser::isEscapeSequence(char c) const
+{
+	/** not in switch:
+			'\\' - backslash
+			'\?' - questionmark
+			'\ooo' - octal
+			'\xhhh' - hexadecimal
+			'\uxxx' - utf-8
+			'\Uxxxxxxxx' - utf-16
+	**/
+	switch(c)
+	{
+		case '\n': //new line
+		case '\t': //horizontal tab
+		case '\v': //vertial tab
+		case '\b': //backspace
+		case '\r': //carriage return
+		case '\f': //form feed
+		case '\a': //alert
+		case '\0': //null
+			return true;
+		default:
+			return false;
+	}
 }
 
 bool HTMLParser::isTag(const std::string s) const

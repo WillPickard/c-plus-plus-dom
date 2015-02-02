@@ -49,6 +49,8 @@ class HTMLParser
 		bool isTag(const std::string) const;
 
 		bool hasMore() const;
+
+		bool isEscapeSequence(const char) const;
 		
 		const char * getRawHTML() const;
 		int getCurrentIndex() const;

@@ -55,12 +55,14 @@ int main(int argc, const char * argv[])
 	{
 		vector<char> v = parser->next();
 		string s (v.begin(), v.end());
-		cout << s;
+		cout << s << endl;
+		/*
 		if(parser->isTag(s))
 		{
 			cout << " isTag!";
 		}
-		cout << endl;
+		*/
+	//	cout << endl;
 	}
 	return 0;
 }
