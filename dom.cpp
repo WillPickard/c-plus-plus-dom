@@ -2,8 +2,10 @@
 
 #include "dom.h"
 #include <stack>//stack
+#include <queue>//queue
 #include <unistd.h>
 #include <stdlib.h>
+#include "html_parser.cpp" //HTMLParser
 /****
 
 
@@ -60,7 +62,7 @@ DOM::DOM(const char * html)
 	std::vector<const char *> raw_tags;
 	std::stack<char> chars;
 	std::stack<const char *> partial_tags;
-	std::stack<const char *> tags;
+	std::queue<const char *> tags;
 	bool isCloseTag = false; //set to true when it is a closing tag (has '/')
 	//number of characters in the html
 	int len = strlen(html);
@@ -70,7 +72,7 @@ DOM::DOM(const char * html)
 	std::string innerText = "";
 	std::string fullTag = "";
 	std::size_t str_length;
-	char *cT, *fT, *oT;
+	char *cT, *fT, *oT, *iT;
 	for(int i = 0; i < len; i++)
 	{
 		char c = html[i];
@@ -101,20 +103,33 @@ DOM::DOM(const char * html)
 						chars.pop();
 						closeTag = c + closeTag;
 					}
+				//	std::cout << closeTag << std::endl;
+
 					cT = (char *) malloc(closeTag.length() + 1);
 					str_length = closeTag.copy(cT, closeTag.length(), 0);
 					cT[str_length] = '\0';
-					tags.push(cT);
+				//	tags.push(cT);
 				//	partial_tags.push(cT);
 				//	std::cout << "closeTag : " << partial_tags.top() << std::endl;
 					//closeTag = "";
 					//now iterate threw the characters if there are any
-					while(!chars.empty())
+					if(!chars.empty())
 					{
-						c = chars.top();
-						chars.pop();
-						innerText = c + innerText; 
+						innerText = "";
+						while(!chars.empty())
+						{
+							c = chars.top();
+							chars.pop();
+							innerText = c + innerText; 
+						}
+
+						//now push the inner text on first. Then the close tag
+						iT = (char *) malloc(innerText.length() + 1);
+						str_length = innerText.copy(iT, innerText.length(), 0);
+						iT[str_length] = '\0';
+						tags.push(iT);
 					}
+					tags.push(cT);
 
 				//	closeTag = partial_tags.top();
 				//	std::cout << "closeTag: " << partial_tags.top() << std::endl;
@@ -159,10 +174,50 @@ DOM::DOM(const char * html)
 		}
 	}
 
-	while(!tags.empty())
+	//now make the dom 
+	if(!tags.empty())
 	{
-		std::cout << tags.top() << std::endl;
+		std::queue<const char *> tagsToProcess;
+
+		const char * firstTag = tags.front();
+		if(strlen(firstTag) >= 2 && firstTag[1] == '!')
+		{
+			//the document declaration tag
+			//pop it off
+			const char * docType = firstTag;
+			tags.pop();
+			
+		}
+		
+		//now the root will be whatever is on the top
+		tagsToProcess.push(tags.front());
 		tags.pop();
+		while(!tagsToProcess.empty())
+		{
+			const char * tag = tags.front();
+			tags.pop();
+			//put it on the toProcess
+			tagsToProcess.push(tag);
+			//check to see if it was a closetag
+			if(strlen(tag) >= 2 && tag[1] == '/')
+			{
+				std::string fullTag = tag;
+				//if it is a closing tag, then pop til you get its counter part
+				size_t closeTagLength = strlen(tag);
+				//we subtract 3 because the close tag has 3 chars that do not distinguish its tag type (</p> - only need the p)
+				int actualTagLength = closeTagLength - 3;
+
+				char cleanCloseTag[actualTagLength], openCloseTag[actualTagLength];
+				//substr
+				memcpy(cleanCloseTag, &tag[1], actualTagLength);
+
+				tag = tags.front();
+				if(strlen(tag) > actualTagLength + 2)
+				{
+					//if it is 2 greater than the actual tag length 
+				}
+			}
+		}	
 	}
 }
 

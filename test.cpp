@@ -12,20 +12,19 @@
 
 using namespace std;
 
-const char * TEST_FILE = "reddit.html";
+const char * TEST_FILE = "test.html";
 
 int main(int argc, const char * argv[])
 {
 	ifstream file (TEST_FILE);
 
 	string lines;
-	string line;
-	while(getline(file, line))
-	{
-		lines += line;
-	}
 
-	DOM * dom = new DOM(lines);
+	lines.assign( (istreambuf_iterator<char> (file) ),
+					(istreambuf_iterator<char> ()) );
+
+	cout << lines << endl;
+	//DOM * dom = new DOM(lines);
 
 	return 0;
 }
