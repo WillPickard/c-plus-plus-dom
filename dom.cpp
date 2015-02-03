@@ -71,10 +71,49 @@ DOM::DOM(const char * html)
 		tags.push(s);
 	}
 
+	std::stack<std::string> test;
+	std::queue<std::string> fullTags;
 	while(!tags.empty())
 	{
-		std::cout << tags.front() << std::endl;
+		std::string tag = tags.front();
+		
+		if(!parser->isTag(tag))
+		{
+			test.push(tag);
+		}
+		else if(parser->isOpenTag(tag))
+		{
+			test.push(tag);
+		}
+		else if (parser->isBothTag(tag))
+		{
+			test.push(tag);
+		}
+		else
+		{
+			//close tag
+			std::string mid = test.top();
+			test.pop();
+
+			if(!parser->isOpenTag(mid))
+			{
+				tag = mid + tag;
+				mid = test.top();
+				test.pop();
+			}
+
+			if(parser->isOpenTag(mid))
+			{
+				fullTags.push(mid + tag);
+			}
+		}
 		tags.pop();
+	}
+
+	while(!fullTags.empty())
+	{
+		std::cout << fullTags.front() << std::endl;
+		fullTags.pop();
 	}
 }
 

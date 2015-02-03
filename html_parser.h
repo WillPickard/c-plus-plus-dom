@@ -42,11 +42,17 @@ class HTMLParser
 		std::vector<char> nextTag();
 		std::vector<char> next();
 
+		bool isOpenTag(const char *) const;
+		bool isOpenTag(const std::string) const;
+
 		bool isCloseTag(const char *) const;
 		bool isCloseTag(const std::string) const;
 
 		bool isTag(const char *) const;
 		bool isTag(const std::string) const;
+
+		bool isBothTag(const char *) const;
+		bool isBothTag(const std::string) const;
 
 		bool hasMore() const;
 

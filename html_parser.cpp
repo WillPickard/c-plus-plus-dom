@@ -280,7 +280,6 @@ int HTMLParser::cmpTags(const char * a, const char * b) const
 
 //	std::cout << "aS name : " << aS << " and bN name : " << bS << std::endl;
 
-	
 	int r = aS.compare(bS);
 	//std::cout << "cmpTags, a: " << aS << "(" << aS.length() << "), b: " << bS << "(" << bS.length() << "). return : " << r << std::endl;
 	return r;
@@ -290,6 +289,61 @@ int HTMLParser::cmpTags(const std::string a, const std::string b) const
 	return cmpTags(a.c_str(), b.c_str());
 }
 
+//t/f if the tag is both an open an close tag
+//that is like an img tag: <img src="src" />
+bool HTMLParser::isBothTag(const char * s) const
+{
+	//so it will be a "both" tag if we start from the left to right anc encounter any characters other that '>', ' ', and '/'
+	int len = strlen(s);
+	int i = len - 1;
+	bool both = false;
+	int required = 0; //required must be 2, that is we must hit a '<' and a '/' if it is a both tag before anything else
+
+	for(i; i > 0; i--)
+	{
+		if(s[i] == ' ') continue;
+		else if(s[i] == '>')
+		{
+			required++;
+			continue;
+		}
+		else if(s[i] == '/')
+		{
+			if(required != 1)
+			{
+				both = false;
+				break;
+			}
+			else
+			{
+				required++;
+				both = true;
+				break;
+			}
+		}
+		else
+		{
+			//different character than ' ', '/', '>'
+			if(required != 2)
+			{
+				both = false;
+				break;
+			}
+			else
+			{
+				both = true;
+				break;
+			}
+		}
+	}
+
+	return both;
+}
+
+bool HTMLParser::isBothTag(const std::string s) const
+{
+	return isBothTag(s.c_str());
+}
 
 //return t/f if s is a close tag
 bool HTMLParser::isCloseTag(const char * s) const
@@ -321,6 +375,53 @@ bool HTMLParser::isCloseTag(const char * s) const
 bool HTMLParser::isCloseTag(const std::string s) const
 {
 	return isCloseTag(s.c_str());
+}
+
+//return t/f if s is an open tag
+bool HTMLParser::isOpenTag(const char * s) const
+{
+	int len = strlen(s);
+	bool openTag = true;
+	int i = 0;
+	int j = (len - 1);
+	//make sure we have a tag (starts with '<')
+	for(i; i < len; i++)
+	{
+		if(s[i] == '<')
+		{
+			i++;
+			break;
+		}
+		else if(s[i] == ' ') continue;
+		else return false;
+	}
+
+	//check for a '/' at the beginning of the tag
+	for(i; i < len; i++)
+	{
+		if(s[i] == '/') return false;
+		else if(s[i] == ' ') continue;
+		else
+		{
+			i++;
+			break;
+		}
+	}
+
+	//now check to see if it is a both tag (has a '/' at the back)
+	for(j; j >= i; j--)
+	{
+		if(s[j] == '>') continue;
+		else if(s[j] == ' ') continue;
+		else if(s[j] == '/') return false;
+		else break;
+	}
+	return openTag;
+}
+
+bool HTMLParser::isOpenTag(const std::string s) const
+{
+	return isOpenTag(s.c_str());
 }
 
 //return t/f if s is a tag
