@@ -291,58 +291,62 @@ int HTMLParser::cmpTags(const std::string a, const std::string b) const
 
 //t/f if the tag is both an open an close tag
 //that is like an img tag: <img src="src" />
-bool HTMLParser::isBothTag(const char * s) const
+//or: <p id="teset">this is a full tag</p>
+bool HTMLParser::isFullTag(const char * s) const
 {
-	//so it will be a "both" tag if we start from the left to right anc encounter any characters other that '>', ' ', and '/'
 	int len = strlen(s);
 	int i = len - 1;
 	bool both = false;
 	int required = 0; //required must be 2, that is we must hit a '<' and a '/' if it is a both tag before anything else
 
-	for(i; i > 0; i--)
+	//start left to right
+	//scanning for a />
+	for(i; i >= 0; i--)
 	{
-		if(s[i] == ' ') continue;
-		else if(s[i] == '>')
+		switch(s[i])
 		{
-			required++;
-			continue;
-		}
-		else if(s[i] == '/')
-		{
-			if(required != 1)
-			{
-				both = false;
-				break;
-			}
-			else
-			{
+			case '>':
 				required++;
-				both = true;
 				break;
-			}
+			case '/':
+				required++;
+				if(required != 2)
+				{
+					//this means that we encounterd a '/' before a '>'
+					return false;
+				}
+				//break the loop
+				i = -1;
+				break;
+			case '<':
+				return false;
+			default:
+				break;
 		}
-		else
+	}
+
+	//now scan left to right check for a '<' before anything else
+	for(i = 0; i < len; i++)
+	{
+		switch(s[i])
 		{
-			//different character than ' ', '/', '>'
-			if(required != 2)
-			{
-				both = false;
+			case '<':
+				//we golden
+				return true;
+			case ' ':
+				//ignore
 				break;
-			}
-			else
-			{
-				both = true;
-				break;
-			}
+			default:
+				return false;
 		}
 	}
 
 	return both;
 }
 
-bool HTMLParser::isBothTag(const std::string s) const
+bool HTMLParser::isFullTag(const std::string s) const
 {
-	return isBothTag(s.c_str());
+	return isFullTag(s.c_str());
 }
 
 //return t/f if s is a close tag
@@ -414,7 +418,7 @@ bool HTMLParser::isOpenTag(const char * s) const
 		if(s[j] == '>') continue;
 		else if(s[j] == ' ') continue;
 		else if(s[j] == '/') return false;
-		else break;
+		else continue;
 	}
 	return openTag;
 }
@@ -451,6 +455,30 @@ bool HTMLParser::isTag(const char * s) const
 
 	return isTag;
 
+}
+
+signed char HTMLParser::getTagType(const char * s) const
+{
+	signed char result = HTMLParser::tag_type_none;
+
+	if(isTag(s))
+		result |= HTMLParser::tag_type_tag;
+	else
+		return result;
+
+	if(isOpenTag(s))
+		result |= HTMLParser::tag_type_open;
+	else if(isCloseTag(s))
+		result |= HTMLParser::tag_type_closed;
+	else if(isFullTag(s))
+		result |= HTMLParser::tag_type_full;
+
+	return result;
+}
+
+signed char HTMLParser::getTagType(const std::string s) const
+{
+	return getTagType(s.c_str());
 }
 
 bool HTMLParser::isEscapeSequence(char c) const

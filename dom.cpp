@@ -60,60 +60,69 @@ DOM::DOM(const char * html)
 
 	HTMLParser * parser = new HTMLParser(html);
 
-	std::queue<std::string> tags;
+	std::stack<std::string> stack;
+	std::queue<std::string> fullElements;
+
 	std::vector<char> current;
-	std::string s;
+	std::string tag;
+
 	std::cout << "constructing dom" << std::endl;
+
 	while(parser->hasMore())
 	{
 		current = parser->next();
-		s.assign(current.begin(), current.end());
-		tags.push(s);
+		tag.assign(current.begin(), current.end());
+		stack.push(tag);
+
+		if(parser->isTag(tag))
+		{
+			if(parser->isCloseTag(tag))
+			{
+				stack.pop();
+				std::string mid = stack.top(); 
+				stack.pop();
+				if(!parser->isTag(mid))
+				{
+					tag = mid + tag;
+					mid = stack.top();
+					stack.pop();
+				}
+
+				if(parser->isOpenTag(mid))
+				{
+					tag = mid + tag;
+					fullElements.push(tag);
+				}
+			}
+			else if (parser->isFullTag(tag))
+			{
+				stack.pop();
+				fullElements.push(tag);
+			}	
+		}
 	}
 
-	std::stack<std::string> test;
-	std::queue<std::string> fullTags;
-	while(!tags.empty())
+	while(!fullElements.empty())
 	{
-		std::string tag = tags.front();
-		
-		if(!parser->isTag(tag))
+		std::string e = fullElements.front();
+		fullElements.pop();
+		std::cout << e << std::endl;
+		if(parser->isTag(e))
 		{
-			test.push(tag);
+			std::cout << "\tis tag" << std::endl;
 		}
-		else if(parser->isOpenTag(tag))
+		if(parser->isOpenTag(e))
 		{
-			test.push(tag);
+			std::cout << "\topen tag" << std::endl;
 		}
-		else if (parser->isBothTag(tag))
+		if(parser->isCloseTag(e))
 		{
-			test.push(tag);
+			std::cout << "\tclose tag" << std::endl;
 		}
-		else
+		if(parser->isFullTag(e))
 		{
-			//close tag
-			std::string mid = test.top();
-			test.pop();
-
-			if(!parser->isOpenTag(mid))
-			{
-				tag = mid + tag;
-				mid = test.top();
-				test.pop();
-			}
-
-			if(parser->isOpenTag(mid))
-			{
-				fullTags.push(mid + tag);
-			}
+			std::cout << "\tfull tag" << std::endl;
 		}
-		tags.pop();
-	}
-
-	while(!fullTags.empty())
-	{
-		std::cout << fullTags.front() << std::endl;
-		fullTags.pop();
 	}
 }
 

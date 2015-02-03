@@ -42,6 +42,9 @@ class HTMLParser
 		std::vector<char> nextTag();
 		std::vector<char> next();
 
+		signed char getTagType(const char *) const;
+		signed char getTagType(const std::string) const;
+
 		bool isOpenTag(const char *) const;
 		bool isOpenTag(const std::string) const;
 
@@ -51,8 +54,8 @@ class HTMLParser
 		bool isTag(const char *) const;
 		bool isTag(const std::string) const;
 
-		bool isBothTag(const char *) const;
-		bool isBothTag(const std::string) const;
+		bool isFullTag(const char *) const;
+		bool isFullTag(const std::string) const;
 
 		bool hasMore() const;
 
@@ -65,8 +68,20 @@ class HTMLParser
 		void setRawHTML(const char *);
 		void setCurrentIndex(int);
 		void setRawHTMLLength(int);
+
+		static const signed char tag_type_none;
+		static const signed char tag_type_tag;
+		static const signed char tag_type_open;
+		static const signed char tag_type_closed;
+		static const signed char tag_type_full;
 		//static const int OPEN_ONLY; //return only the opentag
 		//static const int 
 };
+
+		const signed char HTMLParser::tag_type_none		= 0; //not a tag
+		const signed char HTMLParser::tag_type_tag 		= 1; //is a tag
+		const signed char HTMLParser::tag_type_open 	= 3; //is a tag and is an open tag
+		const signed char HTMLParser::tag_type_closed 	= 5; //is a tag and is a closed tag
+		const signed char HTMLParser::tag_type_full		= 9; //is a tag and is a full tag
 
 #endif
