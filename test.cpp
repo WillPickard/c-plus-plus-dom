@@ -12,7 +12,7 @@
 
 using namespace std;
 
-const char * TEST_FILE = "test.html";
+const char * TEST_FILE = "test2.html";
 
 int main(int argc, const char * argv[])
 {

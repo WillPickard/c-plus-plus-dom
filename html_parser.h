@@ -3,6 +3,7 @@
 #define HTML_PARSER_H
 
 #include <stack>
+#include <array>
 #include <vector>
 #include <queue>
 #include <string>
@@ -33,8 +34,23 @@ class HTMLParser
 		void rewind(int);
 		void fastforward(int);
 
+		std::vector<char> valueString(const char *, const char *) const;
+		std::vector<char> valueString(const char *, const std::string) const;
+		std::vector<char> valueString(const std::string, const char *) const;
+		std::vector<char> valueString(const std::string, const std::string) const;
+
 		std::vector<char> tagname(const char *) const;
 		std::vector<char> tagname(const std::string) const;
+
+		std::vector<char> id(const char *) const;
+		std::vector<char> id(const std::string) const;
+
+		std::vector< std::vector<char> > classes(const char *) const;
+		std::vector< std::vector<char> > classes(const std::string) const;
+
+		//return a vector of arrays where element 0 is the attr name and 1 the value
+		std::vector< std::array<std::string, 2> > attrs(const char *) const;
+		std::vector< std::array<std::string, 2> > attrs(const std::string) const;
 
 		int cmpTags(const char *, const char *) const;
 		int cmpTags(const std::string, const std::string) const;
@@ -68,6 +84,8 @@ class HTMLParser
 		void setRawHTML(const char *);
 		void setCurrentIndex(int);
 		void setRawHTMLLength(int);
+
+
 
 		static const signed char tag_type_none;
 		static const signed char tag_type_tag;

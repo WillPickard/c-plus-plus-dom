@@ -2,7 +2,9 @@
 #ifndef ELEMENT_H
 #define ELEMENT_H
 
+#ifndef STORAGE_ENGINE_H
 #include "element_collection.h"
+#endif
 
 #include <string>
 #include <vector>
@@ -10,48 +12,51 @@
 class Element
 {
 	private:
-		const std::string id;
-		const std::string tagName;
-		const std::vector<std::string> classNames;
-		const std::vector<std::string> attrs;
-		const std::string innerText;
+		std::string id;
+		std::string tagName;
+		std::vector<std::string> classNames;
+		std::vector<std::string> attrs;
+		std::string innerText;
+		std::string raw_html;
 
-		const Element * _parent;
-		const ElementCollection * _parents;	
-		const ElementCollection * _children;
-		const ElementCollection * _siblings;
+		Element * _parent;
+		ElementCollection * _parents;	
+		ElementCollection * _children;
+		ElementCollection * _siblings;
 
-		void setId(const std::string);
-		void setTagName(const std::string);
-		void setClassName(const std::vector<std::string>);
-		void setAttrs(const std::vector<std::string>);
-		void setInnerText(const std::string);
+		void setId( std::string);
+		void setTagName( std::string);
+		void setClassName( std::vector<std::string>);
+		void setAttrs( std::vector<std::string>);
+		void setInnerText( std::string);
+		void setRawHTML( std::string);
 
-		void setParent(const Element *);
-		void setParents(const ElementCollection *);
-		void setChildren(const ElementCollection *);
-		void setSiblings(const ElementCollection *);
-
-		void addClass(const std::string);
-		void addAttr(const std::string);
-		void addParent(const Element *);
-		void addChild(const Element *);
-		void addSibling(const Element *);
+		void setParent( Element *);
+		void setParents( ElementCollection *);
+		void setChildren( ElementCollection *);
+		void setSiblings( ElementCollection *);
 
 	public:
 		Element(const char *);
 		Element(const std::string);
 		//id, tagName, classNames, attrs
-		Element(const std::string, const std::string, const std::vector<std::string>, const std::vector<std::string>);
+		Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>);
 		//id, tagName, classNames, attrs, innerText
-		Element(const std::string, const std::string, const std::vector<std::string>, const std::vector<std::string>, const std::string innerText);
+		Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>,  std::string innerText);
 
+		void addClass( std::string);
+		void addAttr( std::string);
+		void addParent( Element *);
+		void addChild( Element *);
+		void addSibling( Element *);
+		void addInnerText( std::string);
 
-		const std::string getId() const;
-		const std::string getTagName() const;
-		const std::vector<std::string> getClassNames() const;
-		const std::vector<std::string> getAttrs() const;
-		const std::string getText() const;
+		std::string getId() const;
+		std::string getTagName() const;
+		std::vector<std::string> getClassNames() const;
+		std::vector<std::string> getAttrs() const;
+		std::string getText() const;
+		std::string getRawHTML() const;
 
 		Element * parent() const;
 

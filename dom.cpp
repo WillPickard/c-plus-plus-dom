@@ -61,69 +61,86 @@ DOM::DOM(const char * html)
 	HTMLParser * parser = new HTMLParser(html);
 
 	std::stack<std::string> stack;
-	std::queue<std::string> fullElements;
+	std::stack<Element *> elements;
 
 	std::vector<char> current;
 	std::string tag;
 
-	std::cout << "constructing dom" << std::endl;
+	current = parser->next();
+	tag.assign(current.begin(), current.end());
 
+	bool declaration = false;
+	for(int i = 0; i < tag.length(); i++)
+	{
+		if(tag[i] == ' ') continue;
+		if(tag[i] == '<') continue;
+		if(tag[i] == '!')
+		{
+			declaration = true;
+			break;
+		}
+		else break;
+	}
+
+	if(declaration)
+	{
+		Element * dec = new Element(tag);
+	}
+	else
+	{
+		parser->rewind(tag.length());
+	}
+	//stack.push(tag);
+
+	int type;
+	Element * e;
 	while(parser->hasMore())
 	{
 		current = parser->next();
 		tag.assign(current.begin(), current.end());
-		stack.push(tag);
+		type = parser->getTagType(tag);
+		std::cout << tag << std::endl;
 
-		if(parser->isTag(tag))
+		std::vector<char> iv = parser->id(tag);
+		std::string id (iv.begin(), iv.end());
+		std::cout << "\t" << "id: " << id << std::endl;
+		/**
+		switch(type)
 		{
-			if(parser->isCloseTag(tag))
-			{
-				stack.pop();
-				std::string mid = stack.top(); 
-				stack.pop();
-				if(!parser->isTag(mid))
+			case HTMLParser::tag_type_none:
+				elements.top()->addInnerText(tag);
+				break;
+			case HTMLParser::tag_type_open:
+			case HTMLParser::tag_type_full:
+				e = new Element(tag);
+				elements.push(e);
+				break;
+			case HTMLParser::tag_type_closed:
+				e = elements.top();
+				//std::cout << "\t" << "closed, comparing tag: " << tag << " with e raw_html : " << e->getRawHTML() << std::endl;
+				while(parser->cmpTags(e->getRawHTML(), tag) != 0)
 				{
-					tag = mid + tag;
-					mid = stack.top();
-					stack.pop();
+					elements.pop();
+					e = elements.top();
+					e->addChild(e);
 				}
-
-				if(parser->isOpenTag(mid))
-				{
-					tag = mid + tag;
-					fullElements.push(tag);
-				}
-			}
-			else if (parser->isFullTag(tag))
-			{
-				stack.pop();
-				fullElements.push(tag);
-			}	
+			case HTMLParser::tag_type_tag:
+			default:
+				stack.push(tag);
 		}
-	}
-
-	while(!fullElements.empty())
+		**/
+	
+	}//while
+	/**
+	std::cout << "elements.size() : " << elements.size() << std::endl;
+	while(!elements.empty())
 	{
-		std::string e = fullElements.front();
-		fullElements.pop();
-		std::cout << e << std::endl;
-		if(parser->isTag(e))
-		{
-			std::cout << "\tis tag" << std::endl;
-		}
-		if(parser->isOpenTag(e))
-		{
-			std::cout << "\topen tag" << std::endl;
-		}
-		if(parser->isCloseTag(e))
-		{
-			std::cout << "\tclose tag" << std::endl;
-		}
-		if(parser->isFullTag(e))
-		{
-			std::cout << "\tfull tag" << std::endl;
-		}
+		e = elements.top();
+		elements.pop();
+		std::cout << "\t" << e->getRawHTML() << std::endl;
+		std::cout << "\t" << "num children : " << e->children() << std::endl;
 	}
+	**/
 }
 
 
@@ -137,7 +154,7 @@ void DOM::setRawHTML(const std::string html)
 	setRawHTML(html.c_str());
 }
 
-
+/**
 void DOM::setIdStore(StorageEngine * e)
 {
 	id_store = e;
@@ -157,7 +174,7 @@ void DOM::setAttrStore(StorageEngine * e)
 {
 	attr_store = e;
 }
-
+**/
 ElementCollection * DOM::find(const char *)
 {
 
@@ -188,6 +205,7 @@ ElementCollection * DOM::getElementsByAttrName(const char *)
 
 }
 
+/*
 StorageEngine * DOM::getIdStore() const
 {
 
@@ -207,7 +225,7 @@ StorageEngine * DOM::getAttrStore() const
 {
 
 }
-
+*/
 const char * DOM::getRawHTML() const
 {
 

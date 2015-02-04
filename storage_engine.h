@@ -30,6 +30,7 @@ class StorageEngine
 
 	public:
 		void put(std::string, Element *);
+
 		Element * get(std::string) const;;
 
 		int size() const;
