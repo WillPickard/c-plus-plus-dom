@@ -104,15 +104,17 @@ DOM::DOM(const char * html)
 		tag.assign(current.begin(), current.end());
 		type = parser->getTagType(tag);
 		//std::cout << tag << std::endl;
-
+	//	std::cout << "--------- tag at top: " << tag << std::endl;
 		if(parser->isTag(tag))
 		{
 			if(type == HTMLParser::tag_type_open || type == HTMLParser::tag_type_full)
 			{
+		//		std::cout << "tag : " << tag << std::endl;
 				if(type == HTMLParser::tag_type_open)
 				{
 					indent++;
 				}
+		//		std::cout << "indent: " << indent << std::endl;
 				/** extract the element's attributes **/
 				std::vector<char> tn = parser->tagname(tag);
 				std::string tagname (tn.begin(), tn.end());
@@ -130,14 +132,16 @@ DOM::DOM(const char * html)
 				std::vector< std::array<std::string, 2> > attrsA = parser->attrs(tag);
 				std::string innerText = "";
 				/** done with attrs **/
-				if(!text.empty())
+			/*	if(!text.empty())
 				{
 					while(!text.empty())
 					{
+						std::cout << text.top() << std::endl;
 						innerText += text.top();
 						text.pop();
 					}
 				}
+				*/
 				e = new Element(id, tagname, classes, attrsA, innerText);
 
 				if(ele.size() <= indent)
@@ -154,40 +158,58 @@ DOM::DOM(const char * html)
 			}
 			else if (type == HTMLParser::tag_type_closed)
 			{
+			//	std::cout << "tag: " << tag << std::endl;
 				indent--;
+			//	std::cout << "indent: " << indent << std::endl;
 			}
 		}
 
 		
-		else
+		else if (!parser->isEscapeSequence(tag.c_str()[0]))
 		{
-			std::cout << "adding " << tag << " to " << ele.at(indent).back()->getTagName() << std::endl;
+			//std::cout << "adding " << tag << " to " << ele.at(indent).back()->getTagName() << std::endl;
 			ele.at(indent).at(ele.at(indent).size() - 1)->addInnerText(tag);
-			std::cout << "done adding" << std::endl;
+			//std::cout << "done adding" << std::endl;
 		}
 	
 	}//while
 
-	std::cout << "done" << std::endl;
+	//std::cout << "done" << std::endl;
+	//elements that fall in the same master vector are siblings, elements that are in master0 have children in master1 and etc.
 	for(int i = 0; i < ele.size(); i++)
 	{
 		for(int j = 0; j < ele.at(i).size(); j++)
 		{
-			std::string indent = "";
-			for(int c = 0; c < i; c++) indent += "\t";
-			std::cout << indent << ele.at(i).at(j)->getTagName() << " : " << ele.at(i).at(j)->getText() << std::endl;
+			//add siblings
+			for(int s = (j + 1); s < ele.at(i).size(); s++)
+			{
+				ele.at(i).at(j)->addSibling(ele.at(i).at(s));
+				ele.at(i).at(s)->addSibling(ele.at(i).at(j));
+			}
+
+			//add children
+			if((i + 1) < ele.size())
+			{
+				for(int c = (j + 1); c < ele.at(i + 1).size(); c++)
+				{
+					ele.at(i).at(j)->addChild(ele.at(i + 1).at(c));
+					ele.at(i + 1).at(c)->addParent(ele.at(i).at(j));
+				}
+			}
+			
 		}
 	}
-	/**
-	std::cout << "elements.size() : " << elements.size() << std::endl;
-	while(!elements.empty())
+	
+	for(int i = 0; i < ele.size(); i++)
 	{
-		e = elements.top();
-		elements.pop();
-		std::cout << "\t" << e->getRawHTML() << std::endl;
-		std::cout << "\t" << "num children : " << e->children() << std::endl;
+		std::cout << "indent level: " << i << std::endl;
+		for(int j = 0; j < ele.at(i).size(); j++)
+		{
+			Element * e = ele.at(i).at(j);
+			std::cout << "element: " << e->getTagName() << std::endl;
+			//std::cout << "num parents: " << e->parents
+		}
 	}
-	**/
 }
 
 
