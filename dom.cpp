@@ -101,9 +101,41 @@ DOM::DOM(const char * html)
 		type = parser->getTagType(tag);
 		std::cout << tag << std::endl;
 
-		std::vector<char> iv = parser->id(tag);
-		std::string id (iv.begin(), iv.end());
-		std::cout << "\t" << "id: " << id << std::endl;
+		if(parser->isTag(tag))
+		{
+			std::vector<char> tn = parser->tagname(tag);
+			std::string tagname (tn.begin(), tn.end());
+
+			std::vector<char> iv = parser->id(tag);
+			std::string id (iv.begin(), iv.end());
+			
+			std::vector< std::vector<char> > cv = parser->classes(tag);
+			std::string classes = "";
+			for(int i = 0; i < cv.size(); i++)
+			{
+				std::string temp (cv.at(i).begin(), cv.at(i).end());
+				classes += temp + " ";
+			}
+			std::vector< std::array<std::string, 2> > attrsA = parser->attrs(tag);
+			std::string attrs = "";
+			for(int i = 0; i < attrsA.size(); i++)
+			{
+				attrs += attrsA.at(i)[0];
+				attrs += "=";
+				attrs += attrsA.at(i)[1];
+				attrs += " ";
+			}
+
+
+			std::cout << "\t" << "tagname: " << tagname << std::endl;
+			std::cout << "\t" << "id: " << id << std::endl;	
+			std::cout << "\t" << "classes: " << classes << std::endl;	
+			std::cout << "\t" << "attrs: " << attrs << std::endl;	
+
+
+
+		}
+		
 		/**
 		switch(type)
 		{

@@ -10,12 +10,12 @@
 #include <vector>
 
 class Element
-{
+{o
 	private:
 		std::string id;
 		std::string tagName;
 		std::vector<std::string> classNames;
-		std::vector<std::string> attrs;
+		std::vector< std::array<std::string, 2> > attrs;
 		std::string innerText;
 		std::string raw_html;
 
@@ -42,7 +42,7 @@ class Element
 		//id, tagName, classNames, attrs
 		Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>);
 		//id, tagName, classNames, attrs, innerText
-		Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>,  std::string innerText);
+		Element( std::string,  std::string,  std::vector<std::string>,  std::vector< std::array<std::string, 0> >,  std::string innerText);
 
 		void addClass( std::string);
 		void addAttr( std::string);

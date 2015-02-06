@@ -202,9 +202,10 @@ std::vector<char> HTMLParser::next()
 //return a vector of characters for the key in the tag
 std::vector<char> HTMLParser::valueString(const char * tag, const char * key) const
 {
+//	std::cout << "------- looking for value of " << key << " in " << tag << std::endl;
 	std::vector<char> ret; //return vctor
 
-	if(!isOpenTag(tag) || !isCloseTag(key))
+	if(!isOpenTag(tag) && !isCloseTag(key))
 	{
 		return ret;
 	}
@@ -223,23 +224,29 @@ std::vector<char> HTMLParser::valueString(const char * tag, const char * key) co
 			j++;
 			matching++;
 		}
-
+		//std::cout << "matching : " << matching << " and keylen: " << keylen <<  std::endl;
 		//if matching is equal to the tag's length then we have a hit
 		if(matching == keylen)
 		{
 			//scan until ' or "
+		//	std::cout << "hit" << std::endl;
 			char delim; //this will be either ' or "
-			while((tag[i] != '\'' || tag[i] != '"') && i < taglen) i++;
+			while((tag[i] != '\'' && tag[i] != '"') && i < taglen) i++;
 			delim = tag[i];
+		//	std::cout << "delim: " << delim << std::endl;
 			i++; //i is now pointing to the first character
 			char c = tag[i];
 			while(c != delim && i < taglen)
 			{
+		//		std::cout << "\t" << "adding " << c << std::endl;
 				ret.push_back(c);
 				c = tag[++i];
 			}
 			return ret;
 		}
+
+		matching = 0;
+		j = 0;
 	}
 
 	return ret;
@@ -312,50 +319,12 @@ std::vector<char> HTMLParser::id(const char * s) const
 {
 	std::vector<char> ret;
 
-	if(!isOpenTag(s) || !isFullTag(s))
+	if(!isOpenTag(s) && !isFullTag(s))
 	{
 		return ret;
 	}
 
-	//scan until we find 'id="'
-	int len = strlen(s);
-	int i = 0;
-	for(i; i < len; i++)
-	{
-		if(s[i] == 'i' && s[i + 1] == 'd')
-		{
-			i += 2;
-			//scan past ' '
-			while(s[i] == ' ' && i < len) i++;
-			
-			if(s[i] == '=')
-			{
-				i++;
-				//scan past ' '
-				if(s[i] == ' ')
-				{
-					while(s[i] == ' ') i++;
-				}
-
-				if(s[i] == '"')
-				{
-					//we have an id, scan until '"'
-					char c = s[i];
-					while(c != '"' && i < len)
-					{
-						ret.push_back(c);
-						c = s[++i];
-					}
-					return ret;
-				}
-			}	
-		}
-		else
-		{
-			i += 2;
-		}
-	}
-
+	ret = valueString(s, "id");
 	return ret;
 }
 std::vector<char> HTMLParser::id(const std::string s) const
@@ -363,62 +332,31 @@ std::vector<char> HTMLParser::id(const std::string s) const
 	return id(s.c_str());
 }
 
+//return a vector of char vectors. Each vector in the parent vector 
+//represents a single class seperated by a ' '
 std::vector< std::vector<char> > HTMLParser::classes(const char * s) const
 {
 	std::vector< std::vector<char> > ret;
 
-	if(!isOpenTag(s) || !isFullTag(s))
+	if(!isOpenTag(s) && !isFullTag(s))
 	{
 		return ret;
 	}
 
-	//scan until we find 'class="'
-	int len = strlen(s);
-	int i = 0;
-	for(i; i < len; i++)
+	std::vector<char> value = valueString(s, "class");
+	for(int i = 0; i < value.size(); i++)
 	{
-		if(s[i] == 'c' && s[i + 1] == 'l' && s[i + 2] == 'a' && s[i + 3] == 's' && s[i + 4] == 's')
+		std::vector<char> local;
+		while(i < value.size() && value.at(i) != ' ')
 		{
-			i += 5;
-			//scan past ' '
-			while(s[i] == ' ') i++;
-
-			if(s[i] == '=')
-			{
-				i++;
-				//scan past ' '
-				while(s[i] == ' ') i++;
-
-				if(s[i] == '"')
-				{
-					i++;
-					char c = s[i];
-					//scan until the close '"'
-					while(c != '"' && i < len)
-					{
-						std::vector<char> local;
-						//scan until ' '
-						while(c != ' ' && i < len)
-						{
-							c = s[i];
-							local.push_back(c);
-							c = s[++i];
-						}
-
-						ret.push_back(local);
-					}
-					return ret;
-				}
-
-			}
+			local.push_back(value.at(i));
+			i++;
 		}
-		else
-		{
-			i += 5;
-		}
+		ret.push_back(local);
 	}
 
 	return ret;
+	
 }
 std::vector< std::vector<char> > HTMLParser::classes(const std::string s) const
 {
@@ -430,7 +368,7 @@ std::vector< std::array<std::string, 2> > HTMLParser::attrs(const char * s) cons
 {
 	std::vector< std::array<std::string, 2> > ret;
 
-	if(!isOpenTag(s) || !isFullTag(s))
+	if(!isOpenTag(s) && !isFullTag(s))
 	{
 		return ret;
 	}
@@ -445,21 +383,26 @@ std::vector< std::array<std::string, 2> > HTMLParser::attrs(const char * s) cons
 	{
 		if(s[i] == '=')
 		{
+			//std::cout << "\t" << i << std::endl;
 			j = i; //no need to go forwards after this after we do what were are about to do
 			//key is backwards until ' ' after any ' '
 			i--;
-			//scan until the first ' '
-			while(s[i] != ' ' && i > 0) i--;
-			//now scan in letters until ' '
+			//scan until the first character skipping ' '
+			while(s[i] == ' ' && (i) > 0) i--;
+			//std::cout << "\t" << i << std::endl;
+
+			key = "";
+			//now scan in letters until ' ' or until we have scanned in the whole key
 			while(s[i] != ' ' && i > 0)
 			{
-				char c = s[i];
+				char c = s[i--];
+			//	std::cout << "\tc : " << c << std::endl;
 				key = c + key; //we are going backwards so we have to build it in reverse order
 			}	
 			std::array<std::string, 2> part;
 			//key is now the key
 			part[0] = key;
-
+			//std::cout << "\tkey : " << key << std::endl;
 			i = j; //save time, i is now pointing to a '='
 			i++;
 			//scan past ' '
@@ -467,7 +410,8 @@ std::vector< std::array<std::string, 2> > HTMLParser::attrs(const char * s) cons
 			//i is now pointing to a " or a '
 			char delim = s[i];
 			i++;
-			//scan until close delim
+			//scan until close delim scanning into the value
+			value = "";
 			while(s[i] != delim)
 			{
 				value += s[i]; //normal order
@@ -475,6 +419,7 @@ std::vector< std::array<std::string, 2> > HTMLParser::attrs(const char * s) cons
 			}
 			part[1] = value;
 			ret.push_back(part);
+
 		}
 	}
 

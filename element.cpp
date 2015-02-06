@@ -27,15 +27,18 @@ Element::Element(const std::string s)
 	setInnerText(s);
 }
 //id, tagName, classNames, attrs
-Element::Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>)
-{
-
-}
+Element::Element( std::string id,  std::string tagname,  std::vector<std::string> classnames,  std::vector< std::array<std::string, 2> > attrs):
+	id(id),
+	tagName(tagname),
+	classNames(classnames),
+	attrs(attrs)
+	{};
+	
 //id, tagName, classNames, attrs, innerText
-Element::Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>,  std::string innerText)
-{
-
-}
+Element::Element( std::string id,  std::string tagname,  std::vector<std::string> classnames,  std::vector< std::array<std::string, 2> > attrs,  std::string innerText):
+	Element(id, tagname classnames, attrs),
+	innerText(innerText)
+	{};
 
 void Element::setId( std::string s)
 {
@@ -49,7 +52,7 @@ void Element::setClassName( std::vector<std::string> s)
 {
 	classNames = s;
 }
-void Element::setAttrs( std::vector<std::string> a)
+void Element::setAttrs( std::vector< std::array<std::string, 2> > a)
 {
 	attrs = a;
 }
@@ -118,7 +121,7 @@ std::vector<std::string> Element::getClassNames() const
 {	
 	return classNames;
 }
-std::vector<std::string> Element::getAttrs() const
+std::vector< std::array<std::string, 2> > Element::getAttrs() const
 {
 	return attrs;
 }
