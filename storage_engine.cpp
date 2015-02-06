@@ -33,7 +33,40 @@
 	};
 
 ****/
+StorageEngine::StorageEngine():
+	_size(0),
+	empty(true)
+	{
+		root = NULL;
+	}
+//constructor with a root, use the tags name as the idnex if none if provided
+StorageEngine::StorageEngine(Element * e):
+	_size(1),
+	empty(false)
+	{
+		struct Bucket r;
+		std::string i = e->getTagName();
+		r.elements.push_back(e);
+		r.index = i;
+		r.left = NULL;
+		r.right = NULL;
 
+		root = &r;
+	}
+//construct the engine with a index
+StorageEngine::StorageEngine(std::string i, Element * e):
+	_size(1),
+	empty(false)
+	{
+		struct Bucket r;
+
+		r.elements.push_back(e);
+		r.index = i;
+		r.left = NULL;
+		r.right = NULL;
+
+		root = &r;
+	}
 void StorageEngine::setSize(int s)
 {
 	_size = s;

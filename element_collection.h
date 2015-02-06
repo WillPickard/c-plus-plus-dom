@@ -33,9 +33,11 @@ class ElementCollection
 		void setElements(StorageEngine *);
 
 	public:
-		ElementCollection(StorageEngine *);
+		ElementCollection();
 		ElementCollection(std::vector<Element *>);
 		
+		ElementCollection * find();
+
 		void add(Element *);
 
 		bool hasNext();

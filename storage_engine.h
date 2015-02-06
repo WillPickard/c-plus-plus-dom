@@ -29,6 +29,9 @@ class StorageEngine
 		void setRoot(struct Bucket *);
 
 	public:
+		StorageEngine();
+		StorageEngine(Element *);
+		StorageEngine(std::string, Element *);
 		void put(std::string, Element *);
 
 		Element * get(std::string) const;;
