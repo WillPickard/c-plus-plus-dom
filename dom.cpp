@@ -60,7 +60,7 @@ DOM::DOM(const char * html)
 
 	HTMLParser * parser = new HTMLParser(html);
 
-	std::stack<std::string> stack;
+	std::stack<std::string> text;
 	std::stack<Element *> elements;
 
 	std::vector<char> current;
@@ -92,77 +92,92 @@ DOM::DOM(const char * html)
 	}
 	//stack.push(tag);
 
+	//2d vector of elements
+	//elements in v.at(0) have children v.at(1) and etc.
+	std::vector< std::vector<Element *> > ele;
 	int type;
 	Element * e;
+	int indent = 0;
 	while(parser->hasMore())
 	{
 		current = parser->next();
 		tag.assign(current.begin(), current.end());
 		type = parser->getTagType(tag);
-		std::cout << tag << std::endl;
+		//std::cout << tag << std::endl;
 
 		if(parser->isTag(tag))
 		{
-			std::vector<char> tn = parser->tagname(tag);
-			std::string tagname (tn.begin(), tn.end());
-
-			std::vector<char> iv = parser->id(tag);
-			std::string id (iv.begin(), iv.end());
-			
-			std::vector< std::vector<char> > cv = parser->classes(tag);
-			std::string classes = "";
-			for(int i = 0; i < cv.size(); i++)
+			if(type == HTMLParser::tag_type_open || type == HTMLParser::tag_type_full)
 			{
-				std::string temp (cv.at(i).begin(), cv.at(i).end());
-				classes += temp + " ";
-			}
-			std::vector< std::array<std::string, 2> > attrsA = parser->attrs(tag);
-			std::string attrs = "";
-			for(int i = 0; i < attrsA.size(); i++)
-			{
-				attrs += attrsA.at(i)[0];
-				attrs += "=";
-				attrs += attrsA.at(i)[1];
-				attrs += " ";
-			}
-
-
-			std::cout << "\t" << "tagname: " << tagname << std::endl;
-			std::cout << "\t" << "id: " << id << std::endl;	
-			std::cout << "\t" << "classes: " << classes << std::endl;	
-			std::cout << "\t" << "attrs: " << attrs << std::endl;	
-
-
-
-		}
-		
-		/**
-		switch(type)
-		{
-			case HTMLParser::tag_type_none:
-				elements.top()->addInnerText(tag);
-				break;
-			case HTMLParser::tag_type_open:
-			case HTMLParser::tag_type_full:
-				e = new Element(tag);
-				elements.push(e);
-				break;
-			case HTMLParser::tag_type_closed:
-				e = elements.top();
-				//std::cout << "\t" << "closed, comparing tag: " << tag << " with e raw_html : " << e->getRawHTML() << std::endl;
-				while(parser->cmpTags(e->getRawHTML(), tag) != 0)
+				if(type == HTMLParser::tag_type_open)
 				{
-					elements.pop();
-					e = elements.top();
-					e->addChild(e);
+					indent++;
 				}
-			case HTMLParser::tag_type_tag:
-			default:
-				stack.push(tag);
+				/** extract the element's attributes **/
+				std::vector<char> tn = parser->tagname(tag);
+				std::string tagname (tn.begin(), tn.end());
+
+				std::vector<char> iv = parser->id(tag);
+				std::string id (iv.begin(), iv.end());
+				
+				std::vector< std::vector<char> > cv = parser->classes(tag);
+				std::vector< std::string > classes;
+				for(int i = 0; i < cv.size(); i++)
+				{
+					std::string temp (cv.at(i).begin(), cv.at(i).end());
+					classes.push_back(temp);
+				}
+				std::vector< std::array<std::string, 2> > attrsA = parser->attrs(tag);
+				std::string innerText = "";
+				/** done with attrs **/
+				if(!text.empty())
+				{
+					while(!text.empty())
+					{
+						innerText += text.top();
+						text.pop();
+					}
+				}
+				e = new Element(id, tagname, classes, attrsA, innerText);
+
+				if(ele.size() <= indent)
+				{
+					int diff = (indent + 1) - ele.size();
+					for(int i = 0; i < diff; i++)
+					{
+						std::vector<Element *> t;
+						ele.push_back(t);
+					}
+				}
+
+				ele.at(indent).push_back(e);
+			}
+			else if (type == HTMLParser::tag_type_closed)
+			{
+				indent--;
+			}
 		}
-		**/
+
+		
+		else
+		{
+			std::cout << "adding " << tag << " to " << ele.at(indent).back()->getTagName() << std::endl;
+			ele.at(indent).at(ele.at(indent).size() - 1)->addInnerText(tag);
+			std::cout << "done adding" << std::endl;
+		}
 	
 	}//while
+
+	std::cout << "done" << std::endl;
+	for(int i = 0; i < ele.size(); i++)
+	{
+		for(int j = 0; j < ele.at(i).size(); j++)
+		{
+			std::string indent = "";
+			for(int c = 0; c < i; c++) indent += "\t";
+			std::cout << indent << ele.at(i).at(j)->getTagName() << " : " << ele.at(i).at(j)->getText() << std::endl;
+		}
+	}
 	/**
 	std::cout << "elements.size() : " << elements.size() << std::endl;
 	while(!elements.empty())

@@ -8,9 +8,10 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 class Element
-{o
+{
 	private:
 		std::string id;
 		std::string tagName;
@@ -27,7 +28,7 @@ class Element
 		void setId( std::string);
 		void setTagName( std::string);
 		void setClassName( std::vector<std::string>);
-		void setAttrs( std::vector<std::string>);
+		void setAttrs( std::vector< std::array<std::string, 2> >);
 		void setInnerText( std::string);
 		void setRawHTML( std::string);
 
@@ -40,12 +41,12 @@ class Element
 		Element(const char *);
 		Element(const std::string);
 		//id, tagName, classNames, attrs
-		Element( std::string,  std::string,  std::vector<std::string>,  std::vector<std::string>);
+		Element( std::string,  std::string, std::vector<std::string>, std::vector< std::array<std::string, 2> >);
 		//id, tagName, classNames, attrs, innerText
-		Element( std::string,  std::string,  std::vector<std::string>,  std::vector< std::array<std::string, 0> >,  std::string innerText);
+		Element( std::string,  std::string, std::vector<std::string>, std::vector< std::array<std::string, 2> >,  std::string innerText);
 
 		void addClass( std::string);
-		void addAttr( std::string);
+		void addAttr(std::string, std::string);
 		void addParent( Element *);
 		void addChild( Element *);
 		void addSibling( Element *);
@@ -54,7 +55,7 @@ class Element
 		std::string getId() const;
 		std::string getTagName() const;
 		std::vector<std::string> getClassNames() const;
-		std::vector<std::string> getAttrs() const;
+		std::vector< std::array<std::string, 2> > getAttrs() const;
 		std::string getText() const;
 		std::string getRawHTML() const;
 

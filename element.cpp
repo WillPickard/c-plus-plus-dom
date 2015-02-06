@@ -36,9 +36,10 @@ Element::Element( std::string id,  std::string tagname,  std::vector<std::string
 	
 //id, tagName, classNames, attrs, innerText
 Element::Element( std::string id,  std::string tagname,  std::vector<std::string> classnames,  std::vector< std::array<std::string, 2> > attrs,  std::string innerText):
-	Element(id, tagname classnames, attrs),
-	innerText(innerText)
-	{};
+	Element(id, tagname, classnames, attrs)
+	{
+		setInnerText(innerText);
+	};
 
 void Element::setId( std::string s)
 {
@@ -88,9 +89,9 @@ void Element::addClass( std::string s)
 {
 	getClassNames().push_back(s);
 }
-void Element::addAttr( std::string a)
+void Element::addAttr(std::string key, std::string value)
 {
-	getAttrs().push_back(a);
+	//getAttrs().push_back(a);
 }
 void Element::addParent( Element * p)
 {
